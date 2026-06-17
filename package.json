@@ -7,7 +7,14 @@
     "test": "tests"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "lint": "golangci-lint run ./...",
+    "lint:fix": "golangci-lint run --fix ./...",
+    "fmt": "gofmt -w . && goimports -w .",
+    "fmt:check": "gofmt -l . | (! grep .) && goimports -l . | (! grep .)",
+    "test": "go test ./...",
+    "test:verbose": "go test ./... -v",
+    "build": "go build ./...",
+    "vet": "go vet ./..."
   },
   "keywords": [],
   "author": "",
