@@ -1,0 +1,47 @@
+run:
+  timeout: 5m
+  modules-download-mode: readonly
+
+linters:
+  enable:
+    - errcheck        # every error return must be checked
+    - govet           # go vet checks (suspicious constructs)
+    - staticcheck     # comprehensive static analysis
+    - unused          # unused code detection
+    - gosimple        # suggest simplifications
+    - ineffassign     # detect ineffectual assignments
+    - typecheck       # ensures code compiles
+    - gofmt           # enforces standard formatting
+    - goimports       # enforces import grouping/ordering
+    - gocritic        # opinionated but practical style checks
+    - misspell        # catches common typos in comments/strings
+    - noctx           # http calls must use context
+    - bodyclose       # http response bodies must be closed
+    - exhaustive      # switch on enum must cover all cases
+    - godot           # comments must end with a period
+
+linters-settings:
+  gofmt:
+    simplify: true
+  goimports:
+    local-prefixes: pipeline
+  gocritic:
+    enabled-tags:
+      - diagnostic
+      - style
+      - performance
+    disabled-checks:
+      - hugeParam       # false positives on small structs
+  exhaustive:
+    default-signifies-exhaustive: true
+
+issues:
+  exclude-rules:
+    # Test files get slightly relaxed rules
+    - path: _test\.go
+      linters:
+        - errcheck
+        - godot
+  # Show all issues, not just first 3 per linter
+  max-issues-per-linter: 0
+  max-same-issues: 0

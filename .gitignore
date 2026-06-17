@@ -1,0 +1,34 @@
+# Go binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+server
+pipeline
+
+# Go test artifacts
+*.test
+*.out
+coverage.html
+coverage.out
+
+# Build output
+bin/
+dist/
+
+# Environment variables — never commit secrets
+.env
+.env.local
+
+# Node modules (for commitlint)
+node_modules/
+
+# Output data — generated at runtime
+data/output/
+
+# IDE
+.vscode/settings.json
+.idea/
+*.swp
+*.swo

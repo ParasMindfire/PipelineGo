@@ -1,0 +1,34 @@
+pre-commit:
+  parallel: true
+  commands:
+    go-fmt:
+      glob: "*.go"
+      run: gofmt -l {staged_files} | (! grep .)
+      fail_text: "gofmt: run 'gofmt -w .' to fix formatting"
+
+    go-imports:
+      glob: "*.go"
+      run: goimports -l {staged_files} | (! grep .)
+      fail_text: "goimports: run 'goimports -w .' to fix import ordering"
+
+    go-vet:
+      run: go vet ./...
+      fail_text: "go vet found issues — fix them before committing"
+
+    golangci-lint:
+      run: golangci-lint run --fix=false ./...
+      fail_text: "golangci-lint found issues — run 'golangci-lint run' to see details"
+
+    go-build:
+      run: go build ./...
+      fail_text: "project does not compile — fix build errors before committing"
+
+commit-msg:
+  commands:
+    commitlint:
+      run: npx --no -- commitlint --edit {1}
+      fail_text: |
+        Commit message does not follow Conventional Commits.
+        Format: <type>(<scope>): <subject>
+        Types: feat | fix | docs | style | refactor | test | chore | perf | ci | revert
+        Example: feat(ingestion): add csv reader with context cancellation
