@@ -35,7 +35,11 @@ func StartValidation(
 				ok, errs := Validate(jobID, record)
 				if ok {
 					record.IsValid = true
-					validCh <- record
+					select {
+					case validCh <- record:
+					case <-ctx.Done():
+						return
+					}
 					if progressCh != nil {
 						progressCh <- models.ProgressEvent{Processed: 1}
 					}

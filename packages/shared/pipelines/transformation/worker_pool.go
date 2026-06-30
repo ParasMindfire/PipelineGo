@@ -31,7 +31,11 @@ func StartTransformation(
 					return
 				default:
 				}
-				out <- Transform(record)
+				select {
+				case out <- Transform(record):
+				case <-ctx.Done():
+					return
+				}
 			}
 		}()
 	}
