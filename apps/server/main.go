@@ -54,6 +54,12 @@ func run() int {
 		DBName:   getEnv("DB_NAME", "pipeline_db"),
 	}
 
+	apiKey := os.Getenv("API_KEY")
+	if apiKey == "" {
+		log.Error("API_KEY is not set — refusing to start with mutating endpoints unprotected")
+		return 1
+	}
+
 	db, err := config.InitDB(cfg)
 	if err != nil {
 		log.Error("failed to connect to database", map[string]interface{}{"err": err.Error()})
@@ -65,7 +71,7 @@ func run() int {
 	runner := pipelines.NewRunner(repo)
 	svc := service.NewPipelineService(repo, runner)
 	ctrl := controller.NewPipelineController(svc)
-	router := routes.NewRouter(ctrl)
+	router := routes.NewRouter(ctrl, apiKey)
 
 	srv := &http.Server{
 		Addr:         ":" + getEnv("PORT", "8080"),
