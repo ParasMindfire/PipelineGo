@@ -4,8 +4,8 @@
 *.dll
 *.so
 *.dylib
-server
-pipeline
+/server
+/pipeline
 
 # Go test artifacts
 *.test

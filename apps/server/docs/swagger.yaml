@@ -1,0 +1,403 @@
+basePath: /
+definitions:
+  pipeline_packages_shared_models.AggregationResult:
+    properties:
+      by_source:
+        additionalProperties:
+          type: integer
+        type: object
+      computed_at:
+        type: string
+      error_count:
+        type: integer
+      job_id:
+        type: string
+      numeric_stats:
+        additionalProperties:
+          $ref: '#/definitions/pipeline_packages_shared_models.FieldStats'
+        type: object
+      total_count:
+        type: integer
+      valid_count:
+        type: integer
+    type: object
+  pipeline_packages_shared_models.ConcurrencyConfig:
+    properties:
+      ingestion_buffer_size:
+        description: channel buffer, default 100
+        type: integer
+      transform_workers:
+        description: default 5
+        type: integer
+      validation_workers:
+        description: default 5
+        type: integer
+    type: object
+  pipeline_packages_shared_models.ExportConfig:
+    properties:
+      path:
+        description: e.g. "data/output/job-123.json"
+        type: string
+      type:
+        description: '"json" | "csv"'
+        type: string
+    type: object
+  pipeline_packages_shared_models.FieldStats:
+    properties:
+      avg:
+        type: number
+      count:
+        type: integer
+      max:
+        type: number
+      min:
+        type: number
+      sum:
+        type: number
+    type: object
+  pipeline_packages_shared_models.JobSpec:
+    properties:
+      concurrency:
+        $ref: '#/definitions/pipeline_packages_shared_models.ConcurrencyConfig'
+      export:
+        $ref: '#/definitions/pipeline_packages_shared_models.ExportConfig'
+      sources:
+        items:
+          $ref: '#/definitions/pipeline_packages_shared_models.SourceConfig'
+        type: array
+    type: object
+  pipeline_packages_shared_models.JobStatus:
+    enum:
+    - 0
+    - 1
+    - 2
+    - 3
+    - 4
+    type: integer
+    x-enum-comments:
+      StatusCancelled: "4"
+      StatusCompleted: "2"
+      StatusFailed: "3"
+      StatusPending: "0"
+      StatusRunning: "1"
+    x-enum-descriptions:
+    - "0"
+    - "1"
+    - "2"
+    - "3"
+    - "4"
+    x-enum-varnames:
+    - StatusPending
+    - StatusRunning
+    - StatusCompleted
+    - StatusFailed
+    - StatusCancelled
+  pipeline_packages_shared_models.PipelineJob:
+    properties:
+      created_at:
+        type: string
+      error_count:
+        type: integer
+      finished_at:
+        type: string
+      id:
+        type: string
+      record_count:
+        type: integer
+      spec:
+        $ref: '#/definitions/pipeline_packages_shared_models.JobSpec'
+      started_at:
+        type: string
+      status:
+        $ref: '#/definitions/pipeline_packages_shared_models.JobStatus'
+    type: object
+  pipeline_packages_shared_models.ProgressMetrics:
+    properties:
+      elapsed_seconds:
+        type: number
+      end_time:
+        type: string
+      error_count:
+        type: integer
+      job_id:
+        type: string
+      percent_complete:
+        description: 0–100, or -1 if total is unknown
+        type: number
+      processed_count:
+        type: integer
+      records_per_sec:
+        type: number
+      start_time:
+        type: string
+      status:
+        type: string
+    type: object
+  pipeline_packages_shared_models.SourceConfig:
+    properties:
+      type:
+        description: '"csv" | "json" | "api"'
+        type: string
+      url:
+        type: string
+    type: object
+  pipeline_packages_shared_models.ValidationError:
+    properties:
+      at:
+        type: string
+      field:
+        type: string
+      job_id:
+        type: string
+      message:
+        type: string
+      record_id:
+        type: string
+    type: object
+info:
+  contact: {}
+  description: Data ingestion, validation, transformation, and aggregation pipeline
+    service.
+  title: Pipeline Builder API
+  version: "1.0"
+paths:
+  /api/v1/pipelines:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/pipeline_packages_shared_models.PipelineJob'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: List pipeline jobs
+      tags:
+      - pipelines
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Pipeline job specification
+        in: body
+        name: spec
+        required: true
+        schema:
+          $ref: '#/definitions/pipeline_packages_shared_models.JobSpec'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/pipeline_packages_shared_models.PipelineJob'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Create a pipeline job
+      tags:
+      - pipelines
+  /api/v1/pipelines/{id}:
+    delete:
+      parameters:
+      - description: Job ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Delete a pipeline job
+      tags:
+      - pipelines
+    get:
+      parameters:
+      - description: Job ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/pipeline_packages_shared_models.PipelineJob'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get a pipeline job
+      tags:
+      - pipelines
+  /api/v1/pipelines/{id}/cancel:
+    patch:
+      parameters:
+      - description: Job ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Cancel a running pipeline job
+      tags:
+      - pipelines
+  /api/v1/pipelines/{id}/errors:
+    get:
+      parameters:
+      - description: Job ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/pipeline_packages_shared_models.ValidationError'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get pipeline job validation errors
+      tags:
+      - pipelines
+  /api/v1/pipelines/{id}/progress:
+    get:
+      parameters:
+      - description: Job ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/pipeline_packages_shared_models.ProgressMetrics'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get pipeline job progress
+      tags:
+      - pipelines
+  /api/v1/pipelines/{id}/results:
+    get:
+      parameters:
+      - description: Job ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/pipeline_packages_shared_models.AggregationResult'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get pipeline job results
+      tags:
+      - pipelines
+  /health:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Liveness check
+      tags:
+      - health
+  /metrics:
+    get:
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: Prometheus text exposition format
+          schema:
+            type: string
+      summary: Prometheus metrics
+      tags:
+      - health
+swagger: "2.0"

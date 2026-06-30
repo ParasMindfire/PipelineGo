@@ -1,0 +1,606 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "Data ingestion, validation, transformation, and aggregation pipeline service.",
+        "title": "Pipeline Builder API",
+        "contact": {},
+        "version": "1.0"
+    },
+    "basePath": "/",
+    "paths": {
+        "/api/v1/pipelines": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "pipelines"
+                ],
+                "summary": "List pipeline jobs",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/pipeline_packages_shared_models.PipelineJob"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "pipelines"
+                ],
+                "summary": "Create a pipeline job",
+                "parameters": [
+                    {
+                        "description": "Pipeline job specification",
+                        "name": "spec",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/pipeline_packages_shared_models.JobSpec"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/pipeline_packages_shared_models.PipelineJob"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/pipelines/{id}": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "pipelines"
+                ],
+                "summary": "Get a pipeline job",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Job ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/pipeline_packages_shared_models.PipelineJob"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "pipelines"
+                ],
+                "summary": "Delete a pipeline job",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Job ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/pipelines/{id}/cancel": {
+            "patch": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "pipelines"
+                ],
+                "summary": "Cancel a running pipeline job",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Job ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/pipelines/{id}/errors": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "pipelines"
+                ],
+                "summary": "Get pipeline job validation errors",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Job ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/pipeline_packages_shared_models.ValidationError"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/pipelines/{id}/progress": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "pipelines"
+                ],
+                "summary": "Get pipeline job progress",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Job ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/pipeline_packages_shared_models.ProgressMetrics"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/pipelines/{id}/results": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "pipelines"
+                ],
+                "summary": "Get pipeline job results",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Job ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/pipeline_packages_shared_models.AggregationResult"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/health": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "health"
+                ],
+                "summary": "Liveness check",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/metrics": {
+            "get": {
+                "produces": [
+                    "text/plain"
+                ],
+                "tags": [
+                    "health"
+                ],
+                "summary": "Prometheus metrics",
+                "responses": {
+                    "200": {
+                        "description": "Prometheus text exposition format",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "pipeline_packages_shared_models.AggregationResult": {
+            "type": "object",
+            "properties": {
+                "by_source": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "integer"
+                    }
+                },
+                "computed_at": {
+                    "type": "string"
+                },
+                "error_count": {
+                    "type": "integer"
+                },
+                "job_id": {
+                    "type": "string"
+                },
+                "numeric_stats": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/pipeline_packages_shared_models.FieldStats"
+                    }
+                },
+                "total_count": {
+                    "type": "integer"
+                },
+                "valid_count": {
+                    "type": "integer"
+                }
+            }
+        },
+        "pipeline_packages_shared_models.ConcurrencyConfig": {
+            "type": "object",
+            "properties": {
+                "ingestion_buffer_size": {
+                    "description": "channel buffer, default 100",
+                    "type": "integer"
+                },
+                "transform_workers": {
+                    "description": "default 5",
+                    "type": "integer"
+                },
+                "validation_workers": {
+                    "description": "default 5",
+                    "type": "integer"
+                }
+            }
+        },
+        "pipeline_packages_shared_models.ExportConfig": {
+            "type": "object",
+            "properties": {
+                "path": {
+                    "description": "e.g. \"data/output/job-123.json\"",
+                    "type": "string"
+                },
+                "type": {
+                    "description": "\"json\" | \"csv\"",
+                    "type": "string"
+                }
+            }
+        },
+        "pipeline_packages_shared_models.FieldStats": {
+            "type": "object",
+            "properties": {
+                "avg": {
+                    "type": "number"
+                },
+                "count": {
+                    "type": "integer"
+                },
+                "max": {
+                    "type": "number"
+                },
+                "min": {
+                    "type": "number"
+                },
+                "sum": {
+                    "type": "number"
+                }
+            }
+        },
+        "pipeline_packages_shared_models.JobSpec": {
+            "type": "object",
+            "properties": {
+                "concurrency": {
+                    "$ref": "#/definitions/pipeline_packages_shared_models.ConcurrencyConfig"
+                },
+                "export": {
+                    "$ref": "#/definitions/pipeline_packages_shared_models.ExportConfig"
+                },
+                "sources": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/pipeline_packages_shared_models.SourceConfig"
+                    }
+                }
+            }
+        },
+        "pipeline_packages_shared_models.JobStatus": {
+            "type": "integer",
+            "enum": [
+                0,
+                1,
+                2,
+                3,
+                4
+            ],
+            "x-enum-comments": {
+                "StatusCancelled": "4",
+                "StatusCompleted": "2",
+                "StatusFailed": "3",
+                "StatusPending": "0",
+                "StatusRunning": "1"
+            },
+            "x-enum-descriptions": [
+                "0",
+                "1",
+                "2",
+                "3",
+                "4"
+            ],
+            "x-enum-varnames": [
+                "StatusPending",
+                "StatusRunning",
+                "StatusCompleted",
+                "StatusFailed",
+                "StatusCancelled"
+            ]
+        },
+        "pipeline_packages_shared_models.PipelineJob": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "error_count": {
+                    "type": "integer"
+                },
+                "finished_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "record_count": {
+                    "type": "integer"
+                },
+                "spec": {
+                    "$ref": "#/definitions/pipeline_packages_shared_models.JobSpec"
+                },
+                "started_at": {
+                    "type": "string"
+                },
+                "status": {
+                    "$ref": "#/definitions/pipeline_packages_shared_models.JobStatus"
+                }
+            }
+        },
+        "pipeline_packages_shared_models.ProgressMetrics": {
+            "type": "object",
+            "properties": {
+                "elapsed_seconds": {
+                    "type": "number"
+                },
+                "end_time": {
+                    "type": "string"
+                },
+                "error_count": {
+                    "type": "integer"
+                },
+                "job_id": {
+                    "type": "string"
+                },
+                "percent_complete": {
+                    "description": "0–100, or -1 if total is unknown",
+                    "type": "number"
+                },
+                "processed_count": {
+                    "type": "integer"
+                },
+                "records_per_sec": {
+                    "type": "number"
+                },
+                "start_time": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "pipeline_packages_shared_models.SourceConfig": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "description": "\"csv\" | \"json\" | \"api\"",
+                    "type": "string"
+                },
+                "url": {
+                    "type": "string"
+                }
+            }
+        },
+        "pipeline_packages_shared_models.ValidationError": {
+            "type": "object",
+            "properties": {
+                "at": {
+                    "type": "string"
+                },
+                "field": {
+                    "type": "string"
+                },
+                "job_id": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "record_id": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}
