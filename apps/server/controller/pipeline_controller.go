@@ -8,8 +8,6 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/go-chi/chi/v5"
-
 	"pipeline/apps/server/service"
 	"pipeline/packages/shared/models"
 )
@@ -53,6 +51,10 @@ func (c *PipelineController) CreatePipeline(w http.ResponseWriter, r *http.Reque
 	var spec models.JobSpec
 	if err := json.NewDecoder(r.Body).Decode(&spec); err != nil {
 		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "invalid JSON body"})
+		return
+	}
+	if err := validateJobSpec(spec); err != nil {
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
 		return
 	}
 
@@ -99,7 +101,10 @@ func (c *PipelineController) ListPipelines(w http.ResponseWriter, r *http.Reques
 // @Failure      500  {object}  map[string]string
 // @Router       /api/v1/pipelines/{id} [get]
 func (c *PipelineController) GetPipeline(w http.ResponseWriter, r *http.Request) {
-	id := chi.URLParam(r, "id")
+	id, ok := jobIDParam(w, r)
+	if !ok {
+		return
+	}
 	job, err := c.service.GetPipeline(id)
 	if errors.Is(err, service.ErrJobNotFound) {
 		writeJSON(w, http.StatusNotFound, map[string]string{"error": "job not found"})
@@ -125,7 +130,10 @@ func (c *PipelineController) GetPipeline(w http.ResponseWriter, r *http.Request)
 // @Failure      500  {object}  map[string]string
 // @Router       /api/v1/pipelines/{id}/progress [get]
 func (c *PipelineController) GetProgress(w http.ResponseWriter, r *http.Request) {
-	id := chi.URLParam(r, "id")
+	id, ok := jobIDParam(w, r)
+	if !ok {
+		return
+	}
 	progress, err := c.service.GetProgress(id)
 	if errors.Is(err, service.ErrJobNotFound) {
 		writeJSON(w, http.StatusNotFound, map[string]string{"error": "job not found"})
@@ -150,7 +158,10 @@ func (c *PipelineController) GetProgress(w http.ResponseWriter, r *http.Request)
 // @Failure      500  {object}  map[string]string
 // @Router       /api/v1/pipelines/{id}/results [get]
 func (c *PipelineController) GetResults(w http.ResponseWriter, r *http.Request) {
-	id := chi.URLParam(r, "id")
+	id, ok := jobIDParam(w, r)
+	if !ok {
+		return
+	}
 	result, err := c.service.GetResults(id)
 	if err != nil {
 		log.Printf("GetResults: %v", err)
@@ -174,7 +185,10 @@ func (c *PipelineController) GetResults(w http.ResponseWriter, r *http.Request) 
 // @Failure      500  {object}  map[string]string
 // @Router       /api/v1/pipelines/{id}/errors [get]
 func (c *PipelineController) GetErrors(w http.ResponseWriter, r *http.Request) {
-	id := chi.URLParam(r, "id")
+	id, ok := jobIDParam(w, r)
+	if !ok {
+		return
+	}
 	errs, err := c.service.GetErrors(id)
 	if err != nil {
 		log.Printf("GetErrors: %v", err)
@@ -195,7 +209,10 @@ func (c *PipelineController) GetErrors(w http.ResponseWriter, r *http.Request) {
 // @Failure      404  {object}  map[string]string
 // @Router       /api/v1/pipelines/{id}/cancel [patch]
 func (c *PipelineController) CancelPipeline(w http.ResponseWriter, r *http.Request) {
-	id := chi.URLParam(r, "id")
+	id, ok := jobIDParam(w, r)
+	if !ok {
+		return
+	}
 	if err := c.service.CancelPipeline(id); err != nil {
 		writeJSON(w, http.StatusNotFound, map[string]string{"error": "job not running"})
 		return
@@ -213,7 +230,10 @@ func (c *PipelineController) CancelPipeline(w http.ResponseWriter, r *http.Reque
 // @Failure      500  {object}  map[string]string
 // @Router       /api/v1/pipelines/{id} [delete]
 func (c *PipelineController) DeletePipeline(w http.ResponseWriter, r *http.Request) {
-	id := chi.URLParam(r, "id")
+	id, ok := jobIDParam(w, r)
+	if !ok {
+		return
+	}
 	if err := c.service.DeletePipeline(id); err != nil {
 		log.Printf("DeletePipeline: %v", err)
 		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "delete failed"})
