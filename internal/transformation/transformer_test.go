@@ -65,7 +65,7 @@ func TestStartTransformation(t *testing.T) {
 	in <- models.Record{ID: "3", Source: "test", IsValid: true, Data: map[string]interface{}{"score": "42"}}
 	close(in)
 
-	out := StartTransformation(context.Background(), in, 2, nil)
+	out := StartTransformation(context.Background(), in, 2)
 
 	var results []models.Record
 	for r := range out {
