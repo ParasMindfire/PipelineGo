@@ -24,7 +24,8 @@ func NewRouter(c *controller.PipelineController) http.Handler {
 		httpSwagger.UIConfig(map[string]string{"defaultModelsExpandDepth": "-1"}),
 	))
 
-	r.Route("/api/v1/pipelines", func(r chi.Router) {
+	r.Route("/api/{version}/pipelines", func(r chi.Router) {
+		r.Use(appmw.VersionGate)
 		r.Post("/", c.CreatePipeline)
 		r.Get("/", c.ListPipelines)
 		r.Route("/{id}", func(r chi.Router) {
