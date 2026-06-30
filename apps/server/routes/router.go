@@ -5,6 +5,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	chimw "github.com/go-chi/chi/v5/middleware"
+	httpSwagger "github.com/swaggo/http-swagger"
 
 	"pipeline/apps/server/controller"
 	appmw "pipeline/apps/server/middleware"
@@ -19,6 +20,9 @@ func NewRouter(c *controller.PipelineController) http.Handler {
 
 	r.Get("/health", c.Health)
 	r.Get("/metrics", c.Metrics)
+	r.Get("/docs/*", httpSwagger.Handler(
+		httpSwagger.UIConfig(map[string]string{"defaultModelsExpandDepth": "-1"}),
+	))
 
 	r.Route("/api/v1/pipelines", func(r chi.Router) {
 		r.Post("/", c.CreatePipeline)

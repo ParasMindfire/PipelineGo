@@ -10,6 +10,8 @@ import (
 
 	"github.com/joho/godotenv"
 
+	_ "pipeline/apps/server/docs"
+
 	"pipeline/apps/server/controller"
 	"pipeline/apps/server/repository"
 	"pipeline/apps/server/routes"
@@ -18,6 +20,11 @@ import (
 	"pipeline/packages/shared/logger"
 	"pipeline/packages/shared/pipelines"
 )
+
+// @title Pipeline Builder API
+// @version 1.0
+// @description Data ingestion, validation, transformation, and aggregation pipeline service.
+// @BasePath /
 
 func getEnv(key, fallback string) string {
 	if v := os.Getenv(key); v != "" {

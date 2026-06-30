@@ -28,11 +28,27 @@ func writeJSON(w http.ResponseWriter, status int, v interface{}) {
 }
 
 // Health is a liveness check for the API server.
+//
+// @Summary      Liveness check
+// @Tags         health
+// @Produce      json
+// @Success      200  {object}  map[string]string
+// @Router       /health [get]
 func (c *PipelineController) Health(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]string{"status": "ok", "version": "1.0"})
 }
 
 // CreatePipeline decodes a JobSpec and asks the service to create and start it.
+//
+// @Summary      Create a pipeline job
+// @Tags         pipelines
+// @Accept       json
+// @Produce      json
+// @Param        spec  body      models.JobSpec  true  "Pipeline job specification"
+// @Success      201   {object}  models.PipelineJob
+// @Failure      400   {object}  map[string]string
+// @Failure      500   {object}  map[string]string
+// @Router       /api/v1/pipelines [post]
 func (c *PipelineController) CreatePipeline(w http.ResponseWriter, r *http.Request) {
 	var spec models.JobSpec
 	if err := json.NewDecoder(r.Body).Decode(&spec); err != nil {
@@ -55,6 +71,13 @@ func (c *PipelineController) CreatePipeline(w http.ResponseWriter, r *http.Reque
 }
 
 // ListPipelines returns every job, most recently created first.
+//
+// @Summary      List pipeline jobs
+// @Tags         pipelines
+// @Produce      json
+// @Success      200  {array}   models.PipelineJob
+// @Failure      500  {object}  map[string]string
+// @Router       /api/v1/pipelines [get]
 func (c *PipelineController) ListPipelines(w http.ResponseWriter, r *http.Request) {
 	jobs, err := c.service.ListPipelines()
 	if err != nil {
@@ -66,6 +89,15 @@ func (c *PipelineController) ListPipelines(w http.ResponseWriter, r *http.Reques
 }
 
 // GetPipeline returns a single job by ID.
+//
+// @Summary      Get a pipeline job
+// @Tags         pipelines
+// @Produce      json
+// @Param        id   path      string  true  "Job ID"
+// @Success      200  {object}  models.PipelineJob
+// @Failure      404  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /api/v1/pipelines/{id} [get]
 func (c *PipelineController) GetPipeline(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	job, err := c.service.GetPipeline(id)
@@ -83,6 +115,15 @@ func (c *PipelineController) GetPipeline(w http.ResponseWriter, r *http.Request)
 
 // GetProgress returns live metrics while the job is running, or a snapshot
 // derived from the DB once it has finished.
+//
+// @Summary      Get pipeline job progress
+// @Tags         pipelines
+// @Produce      json
+// @Param        id   path      string  true  "Job ID"
+// @Success      200  {object}  models.ProgressMetrics
+// @Failure      404  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /api/v1/pipelines/{id}/progress [get]
 func (c *PipelineController) GetProgress(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	progress, err := c.service.GetProgress(id)
@@ -99,6 +140,15 @@ func (c *PipelineController) GetProgress(w http.ResponseWriter, r *http.Request)
 }
 
 // GetResults returns the final aggregation result, or 404 if not yet computed.
+//
+// @Summary      Get pipeline job results
+// @Tags         pipelines
+// @Produce      json
+// @Param        id   path      string  true  "Job ID"
+// @Success      200  {object}  models.AggregationResult
+// @Failure      404  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /api/v1/pipelines/{id}/results [get]
 func (c *PipelineController) GetResults(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	result, err := c.service.GetResults(id)
@@ -115,6 +165,14 @@ func (c *PipelineController) GetResults(w http.ResponseWriter, r *http.Request) 
 }
 
 // GetErrors returns every validation error recorded for a job.
+//
+// @Summary      Get pipeline job validation errors
+// @Tags         pipelines
+// @Produce      json
+// @Param        id   path      string  true  "Job ID"
+// @Success      200  {array}   models.ValidationError
+// @Failure      500  {object}  map[string]string
+// @Router       /api/v1/pipelines/{id}/errors [get]
 func (c *PipelineController) GetErrors(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	errs, err := c.service.GetErrors(id)
@@ -128,6 +186,14 @@ func (c *PipelineController) GetErrors(w http.ResponseWriter, r *http.Request) {
 
 // CancelPipeline signals a running job's context to cancel. No-op (404) if
 // the job isn't currently running.
+//
+// @Summary      Cancel a running pipeline job
+// @Tags         pipelines
+// @Produce      json
+// @Param        id   path      string  true  "Job ID"
+// @Success      200  {object}  map[string]string
+// @Failure      404  {object}  map[string]string
+// @Router       /api/v1/pipelines/{id}/cancel [patch]
 func (c *PipelineController) CancelPipeline(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	if err := c.service.CancelPipeline(id); err != nil {
@@ -139,6 +205,13 @@ func (c *PipelineController) CancelPipeline(w http.ResponseWriter, r *http.Reque
 
 // DeletePipeline cancels the job if running, removes its DB rows, and deletes
 // its output file.
+//
+// @Summary      Delete a pipeline job
+// @Tags         pipelines
+// @Param        id   path  string  true  "Job ID"
+// @Success      204  "No Content"
+// @Failure      500  {object}  map[string]string
+// @Router       /api/v1/pipelines/{id} [delete]
 func (c *PipelineController) DeletePipeline(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	if err := c.service.DeletePipeline(id); err != nil {
@@ -150,6 +223,12 @@ func (c *PipelineController) DeletePipeline(w http.ResponseWriter, r *http.Reque
 }
 
 // Metrics returns job counts in Prometheus text exposition format.
+//
+// @Summary      Prometheus metrics
+// @Tags         health
+// @Produce      plain
+// @Success      200  {string}  string  "Prometheus text exposition format"
+// @Router       /metrics [get]
 func (c *PipelineController) Metrics(w http.ResponseWriter, r *http.Request) {
 	counts, err := c.service.JobCounts()
 	if err != nil {

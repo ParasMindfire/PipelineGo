@@ -34,6 +34,9 @@ linters-settings:
       - hugeParam       # false positives on small structs
   exhaustive:
     default-signifies-exhaustive: true
+  godot:
+    exclude:
+      - "^\\s*@"  # swag/swagger annotations (@Summary, @Router, etc.)
 
 issues:
   exclude-rules:
