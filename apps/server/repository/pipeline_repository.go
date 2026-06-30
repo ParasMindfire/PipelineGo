@@ -118,6 +118,27 @@ func (s *PipelineRepository) DeleteJob(id string) error {
 	return err
 }
 
+// CountsByStatus aggregates job counts per status in SQL, so callers (e.g.
+// the /metrics endpoint, scraped every few seconds) don't have to fetch and
+// hydrate every job row just to tally them in Go.
+func (s *PipelineRepository) CountsByStatus() (map[models.JobStatus]int, error) {
+	rows, err := s.db.Query(`SELECT status, COUNT(*) FROM jobs GROUP BY status`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	counts := make(map[models.JobStatus]int)
+	for rows.Next() {
+		var statusInt, count int
+		if err := rows.Scan(&statusInt, &count); err != nil {
+			return nil, fmt.Errorf("counts by status: scan row: %w", err)
+		}
+		counts[models.JobStatus(statusInt)] = count
+	}
+	return counts, rows.Err()
+}
+
 // ── ERRORS ────────────────────────────────────────────────────────────────────
 
 // SaveError persists one ValidationError to job_errors.

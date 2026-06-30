@@ -186,21 +186,21 @@ func (s *PipelineService) DeletePipeline(id string) error {
 
 // JobCounts tallies jobs by status across the whole job history.
 func (s *PipelineService) JobCounts() (JobCounts, error) {
-	jobs, err := s.repo.ListJobs()
+	byStatus, err := s.repo.CountsByStatus()
 	if err != nil {
 		return JobCounts{}, err
 	}
 
 	var c JobCounts
-	c.Total = len(jobs)
-	for i := range jobs {
-		switch jobs[i].Status {
+	for status, n := range byStatus {
+		c.Total += n
+		switch status {
 		case models.StatusRunning:
-			c.Running++
+			c.Running += n
 		case models.StatusCompleted:
-			c.Completed++
+			c.Completed += n
 		case models.StatusFailed, models.StatusCancelled:
-			c.Failed++
+			c.Failed += n
 		case models.StatusPending:
 			// not counted in any of the three buckets above
 		}

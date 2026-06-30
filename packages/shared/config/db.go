@@ -40,6 +40,8 @@ func createTables(db *sql.DB) error {
 			record_count INTEGER NOT NULL DEFAULT 0
 		);
 
+		CREATE INDEX IF NOT EXISTS idx_jobs_status ON jobs(status);
+
 		CREATE TABLE IF NOT EXISTS job_errors (
 			id         BIGSERIAL PRIMARY KEY,
 			job_id     TEXT NOT NULL REFERENCES jobs(id) ON DELETE CASCADE,
@@ -48,6 +50,8 @@ func createTables(db *sql.DB) error {
 			message    TEXT NOT NULL,
 			created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 		);
+
+		CREATE INDEX IF NOT EXISTS idx_job_errors_job_id ON job_errors(job_id);
 
 		CREATE TABLE IF NOT EXISTS aggregation_results (
 			job_id      TEXT PRIMARY KEY REFERENCES jobs(id) ON DELETE CASCADE,
