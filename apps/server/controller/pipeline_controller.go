@@ -13,7 +13,7 @@ import (
 )
 
 // NewPipelineController wires a PipelineService into a PipelineController.
-func NewPipelineController(s *service.PipelineService) *PipelineController {
+func NewPipelineController(s PipelineService) *PipelineController {
 	return &PipelineController{service: s}
 }
 

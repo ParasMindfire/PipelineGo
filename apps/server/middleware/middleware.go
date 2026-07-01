@@ -49,7 +49,9 @@ func VersionGate(next http.Handler) http.Handler {
 		if !supportedAPIVersions[version] {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusNotFound)
-			_ = json.NewEncoder(w).Encode(map[string]string{"error": "unsupported API version: " + version})
+			if err := json.NewEncoder(w).Encode(map[string]string{"error": "unsupported API version: " + version}); err != nil {
+				log.Printf("VersionGate: write response: %v", err)
+			}
 			return
 		}
 		next.ServeHTTP(w, r)
@@ -102,7 +104,9 @@ func RateLimit(maxRequests int, window time.Duration) func(http.Handler) http.Ha
 			if !limiter.Allow() {
 				w.Header().Set("Content-Type", "application/json")
 				w.WriteHeader(http.StatusTooManyRequests)
-				_ = json.NewEncoder(w).Encode(map[string]string{"error": "rate limit exceeded"})
+				if err := json.NewEncoder(w).Encode(map[string]string{"error": "rate limit exceeded"}); err != nil {
+					log.Printf("RateLimit: write response: %v", err)
+				}
 				return
 			}
 			next.ServeHTTP(w, r)
@@ -119,7 +123,9 @@ func APIKeyAuth(key string) func(http.Handler) http.Handler {
 			if provided == "" || subtle.ConstantTimeCompare([]byte(provided), []byte(key)) != 1 {
 				w.Header().Set("Content-Type", "application/json")
 				w.WriteHeader(http.StatusUnauthorized)
-				_ = json.NewEncoder(w).Encode(map[string]string{"error": "missing or invalid api key"})
+				if err := json.NewEncoder(w).Encode(map[string]string{"error": "missing or invalid api key"}); err != nil {
+					log.Printf("APIKeyAuth: write response: %v", err)
+				}
 				return
 			}
 			next.ServeHTTP(w, r)
