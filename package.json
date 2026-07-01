@@ -11,8 +11,9 @@
     "lint:fix": "golangci-lint run --fix ./...",
     "fmt": "gofmt -w . && goimports -w .",
     "fmt:check": "gofmt -l . | (! grep .) && goimports -l . | (! grep .)",
-    "test": "go test ./...",
-    "test:verbose": "go test ./... -v",
+    "test": "go test -v -count=1 -tags unit ./tests/unit/... && go test -v -count=1 -tags integration ./tests/integration/...",
+    "test:unit": "go test -v -count=1 -tags unit ./tests/unit/...",
+    "test:integration": "go test -v -count=1 -tags integration ./tests/integration/...",
     "build": "go build ./...",
     "vet": "go vet ./..."
   },

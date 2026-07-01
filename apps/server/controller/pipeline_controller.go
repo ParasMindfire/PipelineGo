@@ -13,7 +13,7 @@ import (
 )
 
 // NewPipelineController wires a PipelineService into a PipelineController.
-func NewPipelineController(s *service.PipelineService) *PipelineController {
+func NewPipelineController(s PipelineService) *PipelineController {
 	return &PipelineController{service: s}
 }
 
@@ -53,7 +53,7 @@ func (c *PipelineController) CreatePipeline(w http.ResponseWriter, r *http.Reque
 		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "invalid JSON body"})
 		return
 	}
-	if err := validateJobSpec(spec); err != nil {
+	if err := ValidateJobSpec(spec); err != nil {
 		writeJSON(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
 		return
 	}

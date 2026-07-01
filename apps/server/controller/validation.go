@@ -38,11 +38,11 @@ const (
 	maxIngestionBufferSize = 10000
 )
 
-// validateJobSpec strictly checks a JobSpec before it's persisted or handed
+// ValidateJobSpec strictly checks a JobSpec before it's persisted or handed
 // to the ingestion/export pipeline, so bad input fails fast with a 400
 // instead of surfacing later as a DB row, a failed file write, or an
 // outbound request to an arbitrary URL.
-func validateJobSpec(spec models.JobSpec) error {
+func ValidateJobSpec(spec models.JobSpec) error {
 	if len(spec.Sources) == 0 {
 		return errors.New("at least one source is required")
 	}
@@ -50,7 +50,7 @@ func validateJobSpec(spec models.JobSpec) error {
 		if !validSourceTypes[src.Type] {
 			return fmt.Errorf("sources[%d]: invalid type %q (must be csv, json, or api)", i, src.Type)
 		}
-		if err := validateSourceURL(src.URL); err != nil {
+		if err := ValidateSourceURL(src.URL); err != nil {
 			return fmt.Errorf("sources[%d]: %w", i, err)
 		}
 	}
@@ -58,7 +58,7 @@ func validateJobSpec(spec models.JobSpec) error {
 	if !validExportTypes[spec.Export.Type] {
 		return fmt.Errorf("export: invalid type %q (must be json or csv)", spec.Export.Type)
 	}
-	if err := validateExportPath(spec.Export.Path); err != nil {
+	if err := ValidateExportPath(spec.Export.Path); err != nil {
 		return fmt.Errorf("export: %w", err)
 	}
 
@@ -76,9 +76,9 @@ func validateJobSpec(spec models.JobSpec) error {
 	return nil
 }
 
-// validateSourceURL requires an absolute http(s) URL, since every reader
+// ValidateSourceURL requires an absolute http(s) URL, since every reader
 // (CSV, JSON, API) fetches the source over HTTP.
-func validateSourceURL(raw string) error {
+func ValidateSourceURL(raw string) error {
 	u, err := url.ParseRequestURI(raw)
 	if err != nil || (u.Scheme != "http" && u.Scheme != "https") || u.Host == "" {
 		return errors.New("url must be an absolute http or https URL")
@@ -86,10 +86,10 @@ func validateSourceURL(raw string) error {
 	return nil
 }
 
-// validateExportPath rejects absolute paths and any ".." segment, so the
+// ValidateExportPath rejects absolute paths and any ".." segment, so the
 // exporter (which calls os.Create on this path verbatim) can't be made to
 // write outside the working directory.
-func validateExportPath(p string) error {
+func ValidateExportPath(p string) error {
 	if p == "" {
 		return errors.New("path is required")
 	}
