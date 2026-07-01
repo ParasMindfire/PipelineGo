@@ -59,10 +59,10 @@ func (s *PipelineRepository) GetJob(id string) (*models.PipelineJob, error) {
 	return &job, nil
 }
 
-// ListJobs returns all jobs ordered by creation time descending.
+// ListJobs returns all jobs ordered by creation time descending, including spec.
 func (s *PipelineRepository) ListJobs() ([]models.PipelineJob, error) {
 	rows, err := s.db.Query(
-		`SELECT id, status, created_at, error_count, record_count
+		`SELECT id, status, spec, created_at, error_count, record_count
 		 FROM jobs ORDER BY created_at DESC`,
 	)
 	if err != nil {
@@ -74,10 +74,14 @@ func (s *PipelineRepository) ListJobs() ([]models.PipelineJob, error) {
 	for rows.Next() {
 		var job models.PipelineJob
 		var statusInt int
-		if err := rows.Scan(&job.ID, &statusInt, &job.CreatedAt, &job.ErrorCount, &job.RecordCount); err != nil {
+		var specJSON []byte
+		if err := rows.Scan(&job.ID, &statusInt, &specJSON, &job.CreatedAt, &job.ErrorCount, &job.RecordCount); err != nil {
 			return nil, fmt.Errorf("list jobs: scan row: %w", err)
 		}
 		job.Status = models.JobStatus(statusInt)
+		if err := json.Unmarshal(specJSON, &job.Spec); err != nil {
+			return nil, fmt.Errorf("list jobs: unmarshal spec: %w", err)
+		}
 		jobs = append(jobs, job)
 	}
 	return jobs, rows.Err()
