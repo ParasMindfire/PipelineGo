@@ -1,6 +1,10 @@
 package models
 
-import "time"
+import (
+	"fmt"
+	"strings"
+	"time"
+)
 
 // JobStatus — lifecycle of a pipeline job.
 type JobStatus int
@@ -20,6 +24,19 @@ func (s JobStatus) String() string {
 // MarshalJSON encodes the status as its string label in API responses.
 func (s JobStatus) MarshalJSON() ([]byte, error) {
 	return []byte(`"` + s.String() + `"`), nil
+}
+
+// UnmarshalJSON decodes a status string label back into a JobStatus int,
+// making the type symmetrically JSON-encodable for clients and tests.
+func (s *JobStatus) UnmarshalJSON(b []byte) error {
+	label := strings.Trim(string(b), `"`)
+	for i, v := range [...]string{"pending", "running", "completed", "failed", "cancelled"} {
+		if v == label {
+			*s = JobStatus(i)
+			return nil
+		}
+	}
+	return fmt.Errorf("unknown job status %q", label)
 }
 
 // ConcurrencyConfig holds worker counts per stage, configurable per job via the POST body.

@@ -53,7 +53,7 @@ func (c *PipelineController) CreatePipeline(w http.ResponseWriter, r *http.Reque
 		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "invalid JSON body"})
 		return
 	}
-	if err := validateJobSpec(spec); err != nil {
+	if err := ValidateJobSpec(spec); err != nil {
 		writeJSON(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
 		return
 	}

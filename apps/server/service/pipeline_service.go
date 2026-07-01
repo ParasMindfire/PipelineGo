@@ -12,7 +12,6 @@ import (
 
 	"pipeline/apps/server/repository"
 	"pipeline/packages/shared/models"
-	"pipeline/packages/shared/pipelines"
 )
 
 // ErrNoSources is returned by CreatePipeline when the spec has no input sources.
@@ -25,8 +24,8 @@ var ErrJobNotRunning = errors.New("job not running")
 // controller) only need to depend on the service package, not the repository.
 var ErrJobNotFound = repository.ErrJobNotFound
 
-// NewPipelineService wires a repository and pipeline runner into a service.
-func NewPipelineService(repo *repository.PipelineRepository, runner *pipelines.Runner) *PipelineService {
+// NewPipelineService wires a PipelineRepo and JobRunner into a service.
+func NewPipelineService(repo PipelineRepo, runner JobRunner) *PipelineService {
 	return &PipelineService{
 		repo:    repo,
 		runner:  runner,

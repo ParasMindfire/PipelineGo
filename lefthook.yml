@@ -16,12 +16,22 @@ pre-commit:
       fail_text: "go vet found issues — fix them before committing"
 
     golangci-lint:
-      run: golangci-lint run --fix=false ./...
+      run: golangci-lint run --fix=false ./apps/... ./packages/...
       fail_text: "golangci-lint found issues — run 'golangci-lint run' to see details"
 
     go-build:
       run: go build ./...
       fail_text: "project does not compile — fix build errors before committing"
+
+    unit-tests:
+      run: go test -tags unit ./tests/unit/...
+      fail_text: "unit tests failed — run 'make test-unit' to see details"
+
+pre-push:
+  commands:
+    integration-tests:
+      run: go test -tags integration ./tests/integration/...
+      fail_text: "integration tests failed — run 'make test-integration' to see details"
 
 commit-msg:
   commands:
