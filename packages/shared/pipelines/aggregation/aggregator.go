@@ -70,7 +70,11 @@ func StartAggregation(
 				result.NumericStats[field] = stats
 			}
 
-			exportCh <- record
+			select {
+			case exportCh <- record:
+			case <-ctx.Done():
+				return
+			}
 		}
 
 		for field, stats := range result.NumericStats {
