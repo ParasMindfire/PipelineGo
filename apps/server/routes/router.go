@@ -12,6 +12,11 @@ import (
 	appmw "pipeline/apps/server/middleware"
 )
 
+const (
+	rateLimitRequests = 100
+	rateLimitWindow   = time.Minute
+)
+
 // NewRouter builds the HTTP router with middleware and all registered routes.
 // apiKey gates the mutating pipeline endpoints (create/cancel/delete) behind
 // the X-API-Key header; reads stay open.
@@ -20,7 +25,7 @@ func NewRouter(c *controller.PipelineController, apiKey string) http.Handler {
 	r.Use(chimw.Recoverer)
 	r.Use(appmw.Logging)
 	r.Use(appmw.CORS)
-	r.Use(appmw.RateLimit(100, time.Minute))
+	r.Use(appmw.RateLimit(rateLimitRequests, rateLimitWindow))
 
 	r.Get("/health", c.Health)
 	r.Get("/metrics", c.Metrics)

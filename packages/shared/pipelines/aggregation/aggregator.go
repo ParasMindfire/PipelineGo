@@ -17,8 +17,8 @@ func StartAggregation(
 	jobID string,
 	in <-chan models.Record,
 ) (exportOut <-chan models.Record, aggOut <-chan models.AggregationResult) {
-	exportCh := make(chan models.Record, 100)
-	resultCh := make(chan models.AggregationResult, 1)
+	exportCh := make(chan models.Record, exportChannelBuffer)
+	resultCh := make(chan models.AggregationResult, resultChannelBuffer)
 
 	go func() {
 		defer close(exportCh)

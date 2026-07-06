@@ -5,6 +5,7 @@ import { Badge } from '../components/ui/Badge'
 import { Spinner } from '../components/ui/Spinner'
 import { StatusPieChart } from '../components/charts/StatusPieChart'
 import type { JobStatus } from '../types/pipeline'
+import { DASHBOARD_RECENT_COUNT } from '../constants/pipeline'
 
 // Single KPI tile used in the top summary row
 function MetricTile({ label, value, bg }: { label: string; value: number; bg: string }) {
@@ -29,7 +30,7 @@ export default function Dashboard() {
     return acc
   }, {} as Record<JobStatus, number>)
 
-  const recent = jobs.slice(0, 6)
+  const recent = jobs.slice(0, DASHBOARD_RECENT_COUNT)
 
   return (
     <div className="space-y-6">
@@ -81,7 +82,7 @@ export default function Dashboard() {
                   <Badge status={job.status} />
                 </Link>
               ))}
-              {jobs.length > 6 && (
+              {jobs.length > DASHBOARD_RECENT_COUNT && (
                 <Link to="/pipelines" className="block text-right text-xs text-blue-600 hover:underline mt-2 pr-3">
                   View all {jobs.length} jobs →
                 </Link>

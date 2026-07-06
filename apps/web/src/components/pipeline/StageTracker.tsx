@@ -1,7 +1,5 @@
 import type { JobStatus } from '../../types/pipeline'
-
-// Pipeline stages in the order they execute (all run concurrently via channels)
-const STAGES = ['Ingestion', 'Validation', 'Transformation', 'Aggregation', 'Export'] as const
+import { PIPELINE_PIPELINE_STAGES } from '../../constants/pipeline'
 
 interface StageTrackerProps {
   status: JobStatus
@@ -15,7 +13,7 @@ function stageClass(status: JobStatus, i: number, pct: number): 'done' | 'active
   if (status === 'pending') return 'idle'
   // running: infer approximate stage from percent if available, else animate all
   if (pct >= 0) {
-    const stageThreshold = ((i + 1) / STAGES.length) * 100
+    const stageThreshold = ((i + 1) / PIPELINE_STAGES.length) * 100
     if (pct >= stageThreshold) return 'done'
   }
   return 'active'
@@ -44,7 +42,7 @@ export function StageTracker({ status, percentComplete }: StageTrackerProps) {
 
   return (
     <div className="flex items-start w-full py-2">
-      {STAGES.map((stage, i) => {
+      {PIPELINE_STAGES.map((stage, i) => {
         const state = stageClass(status, i, percentComplete)
         return (
           <div key={stage} className="flex-1 flex flex-col items-center">
@@ -56,7 +54,7 @@ export function StageTracker({ status, percentComplete }: StageTrackerProps) {
               <div className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 z-10 text-xs font-bold transition-all ${nodeClasses[state]}`}>
                 {state === 'done' ? '✓' : state === 'error' ? '✕' : i + 1}
               </div>
-              {i < STAGES.length - 1 && (
+              {i < PIPELINE_STAGES.length - 1 && (
                 <div className={`flex-1 h-1 transition-colors ${lineClasses[stageClass(status, i + 1, percentComplete)]}`} />
               )}
             </div>

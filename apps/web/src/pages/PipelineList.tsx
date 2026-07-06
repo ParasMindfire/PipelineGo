@@ -5,9 +5,7 @@ import { PipelineCard } from '../components/pipeline/PipelineCard'
 import { Spinner } from '../components/ui/Spinner'
 import { EmptyState } from '../components/ui/EmptyState'
 import type { JobStatus } from '../types/pipeline'
-
-// All possible filter values including the "show everything" option
-const FILTERS: (JobStatus | 'all')[] = ['all', 'running', 'pending', 'completed', 'failed', 'cancelled']
+import { STATUS_FILTERS } from '../constants/pipeline'
 
 // Filterable grid of all pipeline jobs with a "New Pipeline" shortcut
 export default function PipelineList() {
@@ -33,7 +31,7 @@ export default function PipelineList() {
 
       {/* Status filter pills */}
       <div className="flex gap-2 flex-wrap">
-        {FILTERS.map(f => (
+        {STATUS_FILTERS.map(f => (
           <button
             key={f}
             onClick={() => setFilter(f)}

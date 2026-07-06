@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback } from 'react'
 import { listPipelines } from '../api/client'
 import type { PipelineJob } from '../types/pipeline'
+import { PIPELINES_POLL_MS } from '../constants/pipeline'
 
 // Polls GET /api/v1/pipelines every intervalMs, pausing when the tab is hidden
-export function usePipelines(intervalMs = 5000) {
+export function usePipelines(intervalMs = PIPELINES_POLL_MS) {
   const [jobs, setJobs] = useState<PipelineJob[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)

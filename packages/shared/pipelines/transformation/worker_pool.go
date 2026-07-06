@@ -18,7 +18,7 @@ func StartTransformation(
 	in <-chan models.Record,
 	numWorkers int,
 ) <-chan models.Record {
-	out := make(chan models.Record, 100)
+	out := make(chan models.Record, channelBuffer)
 
 	var wg sync.WaitGroup
 	for i := 0; i < numWorkers; i++ {
