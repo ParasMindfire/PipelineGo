@@ -32,3 +32,5 @@ data/output/
 .idea/
 *.swp
 *.swo
+
+.env.docker

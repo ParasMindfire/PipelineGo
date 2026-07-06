@@ -7,7 +7,6 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 
 	"github.com/joho/godotenv"
 
@@ -45,11 +44,11 @@ func run() int {
 	}
 
 	cfg := config.DBConfig{
-		Host:     getEnv("DB_HOST", "localhost"),
-		Port:     getEnv("DB_PORT", "5432"),
-		User:     getEnv("DB_USER", "postgres"),
+		Host:     getEnv("DB_HOST", defaultDBHost),
+		Port:     getEnv("DB_PORT", defaultDBPort),
+		User:     getEnv("DB_USER", defaultDBUser),
 		Password: os.Getenv("DB_PASSWORD"),
-		DBName:   getEnv("DB_NAME", "pipeline_db"),
+		DBName:   getEnv("DB_NAME", defaultDBName),
 	}
 
 	apiKey := os.Getenv("API_KEY")
@@ -72,10 +71,10 @@ func run() int {
 	router := routes.NewRouter(ctrl, apiKey)
 
 	srv := &http.Server{
-		Addr:         ":" + getEnv("PORT", "8080"),
+		Addr:         ":" + getEnv("PORT", defaultPort),
 		Handler:      router,
-		ReadTimeout:  15 * time.Second,
-		WriteTimeout: 60 * time.Second,
+		ReadTimeout:  serverReadTimeout,
+		WriteTimeout: serverWriteTimeout,
 	}
 
 	serveErrCh := make(chan error, 1)
@@ -99,7 +98,7 @@ func run() int {
 		}
 	case <-quit:
 		log.Println("shutting down")
-		ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
 		defer cancel()
 		if err := srv.Shutdown(ctx); err != nil {
 			log.Printf("graceful shutdown failed: %v", err)

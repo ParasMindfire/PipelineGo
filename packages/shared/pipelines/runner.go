@@ -48,7 +48,7 @@ func (r *Runner) Run(ctx context.Context, spec models.JobSpec, jobID string) {
 		log.Printf("runner: mark started %s: %v", jobID, err)
 	}
 
-	progressCh := make(chan models.ProgressEvent, 500)
+	progressCh := make(chan models.ProgressEvent, ProgressEventBuffer)
 	go tracker.Listen(progressCh)
 
 	// ── Stage 1: Ingestion ────────────────────────────────────────────────────
@@ -80,13 +80,13 @@ func (r *Runner) Run(ctx context.Context, spec models.JobSpec, jobID string) {
 	}()
 
 	// ── Stage 5: Export ───────────────────────────────────────────────────────
-	outputPath := "data/output/" + jobID + ".json"
+	outputPath := DefaultOutputDir + jobID + ".json"
 	if spec.Export.Path != "" {
 		outputPath = spec.Export.Path
 	}
 
 	exportErr := r.exporter.Run(ctx, jobID, exportCh, aggCh, models.ExportConfig{
-		Type: "json",
+		Type: DefaultExportType,
 		Path: outputPath,
 	})
 

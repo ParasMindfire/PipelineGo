@@ -2,16 +2,20 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { createPipeline } from '../../api/client'
 import type { JobSpec, SourceConfig } from '../../types/pipeline'
+import {
+  DEFAULT_VAL_WORKERS, DEFAULT_TRANS_WORKERS, DEFAULT_BUFFER_SIZE,
+  DEFAULT_EXPORT_TYPE, DEFAULT_EXPORT_PREFIX, MAX_WORKERS,
+} from '../../constants/pipeline'
 
 // Form to configure and submit a new pipeline job, then redirect to its detail page
 export function CreatePipelineForm() {
   const navigate = useNavigate()
   const [sources, setSources] = useState<SourceConfig[]>([{ type: 'csv', url: '' }])
-  const [exportType, setExportType] = useState<'json' | 'csv'>('json')
+  const [exportType, setExportType] = useState<'json' | 'csv'>(DEFAULT_EXPORT_TYPE)
   const [exportPath, setExportPath] = useState('')
-  const [valWorkers, setValWorkers] = useState(5)
-  const [transWorkers, setTransWorkers] = useState(5)
-  const [bufferSize, setBufferSize] = useState(100)
+  const [valWorkers, setValWorkers] = useState(DEFAULT_VAL_WORKERS)
+  const [transWorkers, setTransWorkers] = useState(DEFAULT_TRANS_WORKERS)
+  const [bufferSize, setBufferSize] = useState(DEFAULT_BUFFER_SIZE)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -33,7 +37,7 @@ export function CreatePipelineForm() {
       sources,
       export: {
         type: exportType,
-        path: exportPath || `data/output/job-${Date.now()}.json`,
+        path: exportPath || `${DEFAULT_EXPORT_PREFIX}${Date.now()}.json`,
       },
       concurrency: {
         validation_workers: valWorkers,
@@ -120,7 +124,7 @@ export function CreatePipelineForm() {
             <div key={label}>
               <label className="text-xs text-gray-400 block mb-1">{label}</label>
               <input
-                type="number" min={1} max={100} value={value}
+                type="number" min={1} max={MAX_WORKERS} value={value}
                 onChange={e => set(Number(e.target.value))}
                 className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-300"
               />

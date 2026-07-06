@@ -1,6 +1,7 @@
 import type { PipelineJob, JobSpec, ValidationError } from '../types/pipeline'
 import type { ProgressMetrics } from '../types/metrics'
 import type { AggregationResult } from '../types/aggregation'
+import { API_BASE } from '../constants/api'
 
 // Base URL empty in dev — Vite proxy forwards /api to localhost:8080
 const BASE_URL = import.meta.env.VITE_API_URL ?? ''
@@ -27,19 +28,19 @@ async function handleResponse<T>(res: Response): Promise<T> {
 
 // Returns all pipeline jobs, most recently created first
 export async function listPipelines(): Promise<PipelineJob[]> {
-  const res = await fetch(`${BASE_URL}/api/v1/pipelines`, { headers: headers() })
+  const res = await fetch(`${BASE_URL}${API_BASE}`, { headers: headers() })
   return handleResponse<PipelineJob[]>(res)
 }
 
 // Returns a single pipeline job by its UUID
 export async function getPipeline(id: string): Promise<PipelineJob> {
-  const res = await fetch(`${BASE_URL}/api/v1/pipelines/${id}`, { headers: headers() })
+  const res = await fetch(`${BASE_URL}${API_BASE}/${id}`, { headers: headers() })
   return handleResponse<PipelineJob>(res)
 }
 
 // Creates a new pipeline job from a JobSpec; requires VITE_API_KEY
 export async function createPipeline(spec: JobSpec): Promise<PipelineJob> {
-  const res = await fetch(`${BASE_URL}/api/v1/pipelines`, {
+  const res = await fetch(`${BASE_URL}${API_BASE}`, {
     method: 'POST',
     headers: headers(true),
     body: JSON.stringify(spec),
@@ -49,7 +50,7 @@ export async function createPipeline(spec: JobSpec): Promise<PipelineJob> {
 
 // Permanently deletes a job and its output file; requires VITE_API_KEY
 export async function deletePipeline(id: string): Promise<void> {
-  const res = await fetch(`${BASE_URL}/api/v1/pipelines/${id}`, {
+  const res = await fetch(`${BASE_URL}${API_BASE}/${id}`, {
     method: 'DELETE',
     headers: headers(true),
   })
@@ -59,7 +60,7 @@ export async function deletePipeline(id: string): Promise<void> {
 
 // Sends a cancellation signal to a running job; requires VITE_API_KEY
 export async function cancelPipeline(id: string): Promise<void> {
-  const res = await fetch(`${BASE_URL}/api/v1/pipelines/${id}/cancel`, {
+  const res = await fetch(`${BASE_URL}${API_BASE}/${id}/cancel`, {
     method: 'PATCH',
     headers: headers(true),
   })
@@ -68,19 +69,19 @@ export async function cancelPipeline(id: string): Promise<void> {
 
 // Returns live metrics from the in-memory tracker, or a DB snapshot when done
 export async function getProgress(id: string): Promise<ProgressMetrics> {
-  const res = await fetch(`${BASE_URL}/api/v1/pipelines/${id}/progress`, { headers: headers() })
+  const res = await fetch(`${BASE_URL}${API_BASE}/${id}/progress`, { headers: headers() })
   return handleResponse<ProgressMetrics>(res)
 }
 
 // Returns aggregation stats for a completed job, or null when not yet computed
 export async function getResults(id: string): Promise<AggregationResult | null> {
-  const res = await fetch(`${BASE_URL}/api/v1/pipelines/${id}/results`, { headers: headers() })
+  const res = await fetch(`${BASE_URL}${API_BASE}/${id}/results`, { headers: headers() })
   if (res.status === 404) return null
   return handleResponse<AggregationResult>(res)
 }
 
 // Returns all validation errors recorded for a job
 export async function getErrors(id: string): Promise<ValidationError[]> {
-  const res = await fetch(`${BASE_URL}/api/v1/pipelines/${id}/errors`, { headers: headers() })
+  const res = await fetch(`${BASE_URL}${API_BASE}/${id}/errors`, { headers: headers() })
   return handleResponse<ValidationError[]>(res)
 }

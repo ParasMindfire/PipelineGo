@@ -13,6 +13,11 @@ import (
 	"golang.org/x/time/rate"
 )
 
+const (
+	rateLimitCleanupInterval = time.Minute
+	rateLimitClientTimeout   = 10 * time.Minute
+)
+
 // Logging logs method, path, and duration for every request.
 func Logging(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -73,10 +78,10 @@ func RateLimit(maxRequests int, window time.Duration) func(http.Handler) http.Ha
 	clients := make(map[string]*entry)
 
 	go func() {
-		for range time.Tick(time.Minute) {
+		for range time.Tick(rateLimitCleanupInterval) {
 			mu.Lock()
 			for ip, e := range clients {
-				if time.Since(e.lastSeen) > 10*time.Minute {
+				if time.Since(e.lastSeen) > rateLimitClientTimeout {
 					delete(clients, ip)
 				}
 			}

@@ -17,8 +17,8 @@ func StartValidation(
 	numWorkers int,
 	progressCh chan<- models.ProgressEvent,
 ) (validOut <-chan models.Record, errOut <-chan models.ValidationError) {
-	validCh := make(chan models.Record, 100)
-	errorCh := make(chan models.ValidationError, 100)
+	validCh := make(chan models.Record, channelBuffer)
+	errorCh := make(chan models.ValidationError, channelBuffer)
 
 	var wg sync.WaitGroup
 	for i := 0; i < numWorkers; i++ {

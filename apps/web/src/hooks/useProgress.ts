@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback } from 'react'
 import { getProgress } from '../api/client'
 import type { ProgressMetrics, RateDataPoint } from '../types/metrics'
+import { PROGRESS_POLL_MS, PROGRESS_HISTORY_LIMIT } from '../constants/pipeline'
 
 // Polls progress for a job and accumulates time-series data for the rate chart
-export function useProgress(jobId: string, active: boolean, intervalMs = 2000) {
+export function useProgress(jobId: string, active: boolean, intervalMs = PROGRESS_POLL_MS) {
   const [metrics, setMetrics] = useState<ProgressMetrics | null>(null)
   const [history, setHistory] = useState<RateDataPoint[]>([])
   const [error, setError] = useState<string | null>(null)
@@ -15,7 +16,7 @@ export function useProgress(jobId: string, active: boolean, intervalMs = 2000) {
       setMetrics(data)
       // Keep last 30 samples so the chart doesn't grow unbounded
       setHistory(prev => [
-        ...prev.slice(-29),
+        ...prev.slice(-(PROGRESS_HISTORY_LIMIT - 1)),
         {
           time: new Date().toLocaleTimeString(),
           rate: Math.round(data.records_per_sec),
