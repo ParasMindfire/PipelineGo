@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -17,7 +18,6 @@ import (
 	"pipeline/apps/server/routes"
 	"pipeline/apps/server/service"
 	"pipeline/packages/shared/config"
-	"pipeline/packages/shared/logger"
 	"pipeline/packages/shared/pipelines"
 )
 
@@ -40,10 +40,8 @@ func main() {
 // run holds the actual startup logic so deferred cleanup (db.Close) always
 // executes before the process exits — os.Exit skips deferred calls.
 func run() int {
-	log := logger.New("info")
-
 	if err := godotenv.Load(); err != nil {
-		log.Warn("no .env file found, using environment variables")
+		log.Println("no .env file found, using environment variables")
 	}
 
 	cfg := config.DBConfig{
@@ -56,13 +54,13 @@ func run() int {
 
 	apiKey := os.Getenv("API_KEY")
 	if apiKey == "" {
-		log.Error("API_KEY is not set — refusing to start with mutating endpoints unprotected")
+		log.Println("API_KEY is not set — refusing to start with mutating endpoints unprotected")
 		return 1
 	}
 
 	db, err := config.InitDB(cfg)
 	if err != nil {
-		log.Error("failed to connect to database", map[string]interface{}{"err": err.Error()})
+		log.Printf("failed to connect to database: %v", err)
 		return 1
 	}
 	defer db.Close()
@@ -82,7 +80,7 @@ func run() int {
 
 	serveErrCh := make(chan error, 1)
 	go func() {
-		log.Info("pipeline server starting", map[string]interface{}{"addr": srv.Addr})
+		log.Printf("pipeline server starting addr=%s", srv.Addr)
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			serveErrCh <- err
 			return
@@ -96,18 +94,18 @@ func run() int {
 	select {
 	case err := <-serveErrCh:
 		if err != nil {
-			log.Error("server failed", map[string]interface{}{"err": err.Error()})
+			log.Printf("server failed: %v", err)
 			return 1
 		}
 	case <-quit:
-		log.Info("shutting down")
+		log.Println("shutting down")
 		ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 		defer cancel()
 		if err := srv.Shutdown(ctx); err != nil {
-			log.Error("graceful shutdown failed", map[string]interface{}{"err": err.Error()})
+			log.Printf("graceful shutdown failed: %v", err)
 			return 1
 		}
-		log.Info("stopped")
+		log.Println("stopped")
 	}
 	return 0
 }

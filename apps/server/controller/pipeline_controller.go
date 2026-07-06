@@ -8,13 +8,29 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/go-chi/chi/v5"
+	"github.com/google/uuid"
+
 	"pipeline/apps/server/service"
 	"pipeline/packages/shared/models"
+	"pipeline/packages/shared/utils/validation"
 )
 
 // NewPipelineController wires a PipelineService into a PipelineController.
 func NewPipelineController(s PipelineService) *PipelineController {
 	return &PipelineController{service: s}
+}
+
+// jobIDParam extracts the {id} path param and validates it's a well-formed
+// UUID, writing a 400 response and returning ok=false if not. This stops
+// malformed IDs from reaching a repository query.
+func jobIDParam(w http.ResponseWriter, r *http.Request) (id string, ok bool) {
+	id = chi.URLParam(r, "id")
+	if _, err := uuid.Parse(id); err != nil {
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "invalid job id: must be a UUID"})
+		return "", false
+	}
+	return id, true
 }
 
 func writeJSON(w http.ResponseWriter, status int, v interface{}) {
@@ -53,7 +69,7 @@ func (c *PipelineController) CreatePipeline(w http.ResponseWriter, r *http.Reque
 		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "invalid JSON body"})
 		return
 	}
-	if err := ValidateJobSpec(spec); err != nil {
+	if err := validation.ValidateJobSpec(spec); err != nil {
 		writeJSON(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
 		return
 	}

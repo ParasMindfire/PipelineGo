@@ -52,8 +52,8 @@ func (m *MockPipelineRepository) ListJobs() ([]models.PipelineJob, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	jobs := make([]models.PipelineJob, 0, len(m.Jobs))
-	for _, j := range m.Jobs {
-		jobs = append(jobs, j)
+	for id := range m.Jobs {
+		jobs = append(jobs, m.Jobs[id])
 	}
 	return jobs, nil
 }
@@ -119,8 +119,8 @@ func (m *MockPipelineRepository) CountsByStatus() (map[models.JobStatus]int, err
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	counts := make(map[models.JobStatus]int)
-	for _, j := range m.Jobs {
-		counts[j.Status]++
+	for id := range m.Jobs {
+		counts[m.Jobs[id].Status]++
 	}
 	return counts, nil
 }

@@ -33,7 +33,8 @@ func (m *MockPipelineService) ListPipelines() ([]models.PipelineJob, error) {
 		return nil, m.ErrToReturn
 	}
 	jobs := make([]models.PipelineJob, 0, len(m.Jobs))
-	for _, j := range m.Jobs {
+	for id := range m.Jobs {
+		j := m.Jobs[id]
 		jobs = append(jobs, j)
 	}
 	return jobs, nil
@@ -68,9 +69,12 @@ func (m *MockPipelineService) DeletePipeline(_ string) error { return m.ErrToRet
 
 func (m *MockPipelineService) JobCounts() (service.JobCounts, error) {
 	var c service.JobCounts
-	for _, j := range m.Jobs {
+	for id := range m.Jobs {
+		j := m.Jobs[id]
 		c.Total++
 		switch j.Status {
+		case models.StatusPending:
+			// counted in Total only
 		case models.StatusRunning:
 			c.Running++
 		case models.StatusCompleted:

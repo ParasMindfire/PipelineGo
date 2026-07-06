@@ -7,19 +7,19 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"pipeline/apps/server/controller"
 	"pipeline/packages/shared/models"
+	"pipeline/packages/shared/utils/validation"
 )
 
 func TestValidateJobSpec_NoSources(t *testing.T) {
-	err := controller.ValidateJobSpec(models.JobSpec{
+	err := validation.ValidateJobSpec(models.JobSpec{
 		Export: models.ExportConfig{Type: "json", Path: "data/out.json"},
 	})
 	assert.EqualError(t, err, "at least one source is required")
 }
 
 func TestValidateJobSpec_InvalidSourceType(t *testing.T) {
-	err := controller.ValidateJobSpec(models.JobSpec{
+	err := validation.ValidateJobSpec(models.JobSpec{
 		Sources: []models.SourceConfig{{Type: "ftp", URL: "http://example.com/data.csv"}},
 		Export:  models.ExportConfig{Type: "json", Path: "data/out.json"},
 	})
@@ -27,7 +27,7 @@ func TestValidateJobSpec_InvalidSourceType(t *testing.T) {
 }
 
 func TestValidateJobSpec_InvalidSourceURL(t *testing.T) {
-	err := controller.ValidateJobSpec(models.JobSpec{
+	err := validation.ValidateJobSpec(models.JobSpec{
 		Sources: []models.SourceConfig{{Type: "csv", URL: "not-a-url"}},
 		Export:  models.ExportConfig{Type: "json", Path: "data/out.json"},
 	})
@@ -35,7 +35,7 @@ func TestValidateJobSpec_InvalidSourceURL(t *testing.T) {
 }
 
 func TestValidateJobSpec_InvalidExportType(t *testing.T) {
-	err := controller.ValidateJobSpec(models.JobSpec{
+	err := validation.ValidateJobSpec(models.JobSpec{
 		Sources: []models.SourceConfig{{Type: "csv", URL: "http://example.com/d.csv"}},
 		Export:  models.ExportConfig{Type: "xml", Path: "data/out.xml"},
 	})
@@ -43,7 +43,7 @@ func TestValidateJobSpec_InvalidExportType(t *testing.T) {
 }
 
 func TestValidateJobSpec_PathTraversal(t *testing.T) {
-	err := controller.ValidateJobSpec(models.JobSpec{
+	err := validation.ValidateJobSpec(models.JobSpec{
 		Sources: []models.SourceConfig{{Type: "csv", URL: "http://example.com/d.csv"}},
 		Export:  models.ExportConfig{Type: "json", Path: "../../etc/passwd"},
 	})
@@ -51,7 +51,7 @@ func TestValidateJobSpec_PathTraversal(t *testing.T) {
 }
 
 func TestValidateJobSpec_AbsolutePath(t *testing.T) {
-	err := controller.ValidateJobSpec(models.JobSpec{
+	err := validation.ValidateJobSpec(models.JobSpec{
 		Sources: []models.SourceConfig{{Type: "csv", URL: "http://example.com/d.csv"}},
 		Export:  models.ExportConfig{Type: "json", Path: "/etc/passwd"},
 	})
@@ -59,7 +59,7 @@ func TestValidateJobSpec_AbsolutePath(t *testing.T) {
 }
 
 func TestValidateJobSpec_NegativeWorkers(t *testing.T) {
-	err := controller.ValidateJobSpec(models.JobSpec{
+	err := validation.ValidateJobSpec(models.JobSpec{
 		Sources:     []models.SourceConfig{{Type: "csv", URL: "http://example.com/d.csv"}},
 		Export:      models.ExportConfig{Type: "json", Path: "data/out.json"},
 		Concurrency: models.ConcurrencyConfig{ValidationWorkers: -1},
@@ -68,7 +68,7 @@ func TestValidateJobSpec_NegativeWorkers(t *testing.T) {
 }
 
 func TestValidateJobSpec_Valid(t *testing.T) {
-	err := controller.ValidateJobSpec(models.JobSpec{
+	err := validation.ValidateJobSpec(models.JobSpec{
 		Sources: []models.SourceConfig{{Type: "api", URL: "https://api.example.com/data"}},
 		Export:  models.ExportConfig{Type: "csv", Path: "data/output/result.csv"},
 	})
@@ -88,7 +88,7 @@ func TestValidateExportPath(t *testing.T) {
 		{"a/../b", true},
 	}
 	for _, tc := range cases {
-		err := controller.ValidateExportPath(tc.path)
+		err := validation.ValidateExportPath(tc.path)
 		if tc.wantErr {
 			assert.Error(t, err, "path=%q should fail", tc.path)
 		} else {
@@ -110,7 +110,7 @@ func TestValidateSourceURL(t *testing.T) {
 		{"http://", true},
 	}
 	for _, tc := range cases {
-		err := controller.ValidateSourceURL(tc.url)
+		err := validation.ValidateSourceURL(tc.url)
 		if tc.wantErr {
 			assert.Error(t, err, "url=%q should fail", tc.url)
 		} else {
