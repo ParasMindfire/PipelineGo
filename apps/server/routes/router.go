@@ -2,7 +2,6 @@ package routes
 
 import (
 	"net/http"
-	"time"
 
 	"github.com/go-chi/chi/v5"
 	chimw "github.com/go-chi/chi/v5/middleware"
@@ -10,11 +9,6 @@ import (
 
 	"pipeline/apps/server/controller"
 	appmw "pipeline/apps/server/middleware"
-)
-
-const (
-	rateLimitRequests = 100
-	rateLimitWindow   = time.Minute
 )
 
 // NewRouter builds the HTTP router with middleware and all registered routes.

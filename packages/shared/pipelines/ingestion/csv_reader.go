@@ -5,7 +5,6 @@ import (
 	"encoding/csv"
 	"fmt"
 	"io"
-	"net/http"
 	"strings"
 	"time"
 
@@ -17,16 +16,15 @@ import (
 // Read fetches the CSV, parses headers from the first row, then sends one
 // Record per data row into out. Stops early if ctx is cancelled.
 func (r *CSVReader) Read(ctx context.Context, out chan<- models.Record) error {
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, r.URL, http.NoBody)
+	resp, err := fetchWithRetry(ctx, r.URL)
 	if err != nil {
-		return fmt.Errorf("csv reader: build request: %w", err)
-	}
-
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return fmt.Errorf("csv reader: fetch %s: %w", r.URL, err)
+		return fmt.Errorf("csv reader: %w", err)
 	}
 	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		return fmt.Errorf("csv reader: unexpected status %d from %s", resp.StatusCode, r.URL)
+	}
 
 	reader := csv.NewReader(resp.Body)
 	reader.LazyQuotes = true // tolerate non-standard quoting in real-world CSVs

@@ -15,13 +15,6 @@ var (
 	validExportTypes = map[string]bool{"json": true, "csv": true}
 )
 
-// Worker/buffer counts above these are rejected to keep a single job spec
-// from being able to spin up unbounded goroutines or channel buffers.
-const (
-	MaxWorkers             = 100
-	MaxIngestionBufferSize = 10000
-)
-
 // ValidateJobSpec strictly checks a JobSpec before it's persisted or handed
 // to the ingestion/export pipeline, so bad input fails fast with a 400
 // instead of surfacing later as a DB row, a failed file write, or an

@@ -1,0 +1,25 @@
+# Git history — not needed in any image
+.git/
+.gitignore
+
+# Frontend build artifacts — not needed for the Go backend build
+apps/web/node_modules/
+apps/web/dist/
+
+# Docs and local dev files
+docs/
+*.md
+.env
+.env.*
+!.env.example
+
+# Editor and OS noise
+.vscode/
+.idea/
+*.DS_Store
+Thumbs.db
+
+# Go test cache and coverage
+*.test
+*.out
+coverage.html
