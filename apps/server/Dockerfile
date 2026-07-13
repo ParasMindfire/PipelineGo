@@ -18,5 +18,7 @@ RUN apk --no-cache add ca-certificates tzdata
 WORKDIR /app
 RUN mkdir -p data/output
 COPY --from=builder /server .
+RUN chown -R nobody:nobody /app
+USER nobody
 EXPOSE 8080
 CMD ["./server"]
