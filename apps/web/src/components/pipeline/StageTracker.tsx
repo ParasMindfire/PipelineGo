@@ -1,5 +1,5 @@
 import type { JobStatus } from '../../types/pipeline'
-import { PIPELINE_PIPELINE_STAGES } from '../../constants/pipeline'
+import { PIPELINE_STAGES } from '../../constants/pipeline'
 
 interface StageTrackerProps {
   status: JobStatus

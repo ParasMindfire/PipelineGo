@@ -49,9 +49,9 @@ type ConcurrencyConfig struct {
 // DefaultConcurrency returns sane defaults used when a job omits concurrency config.
 func DefaultConcurrency() ConcurrencyConfig {
 	return ConcurrencyConfig{
-		ValidationWorkers:   5,
-		TransformWorkers:    5,
-		IngestionBufferSize: 100,
+		ValidationWorkers:   DefaultValidationWorkers,
+		TransformWorkers:    DefaultTransformWorkers,
+		IngestionBufferSize: DefaultIngestionBufferSize,
 	}
 }
 

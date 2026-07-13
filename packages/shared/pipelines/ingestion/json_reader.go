@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"net/http"
 	"time"
 
 	"github.com/google/uuid"
@@ -15,18 +14,13 @@ import (
 // Read fetches the URL, decodes the JSON array, and sends one Record per element.
 // Returns an error if the HTTP request fails, the status is not 200, or JSON is malformed.
 func (r *JSONReader) Read(ctx context.Context, out chan<- models.Record) error {
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, r.URL, http.NoBody)
+	resp, err := fetchWithRetry(ctx, r.URL)
 	if err != nil {
-		return fmt.Errorf("json reader: build request: %w", err)
-	}
-
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return fmt.Errorf("json reader: fetch: %w", err)
+		return fmt.Errorf("json reader: %w", err)
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
+	if resp.StatusCode != 200 {
 		return fmt.Errorf("json reader: unexpected status %d from %s", resp.StatusCode, r.URL)
 	}
 
